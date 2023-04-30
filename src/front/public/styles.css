@@ -1,0 +1,120 @@
+:root {
+  --font-size-md: 18px;
+  --font-size-sm: 16px;
+  --font-size-xs: 14px;
+  --font-size-xxs: 12px;
+  --toolbar-height: 80px;
+  --titlebar-height: 36px;
+  --library-width: 505px; /* 5px extra for borders */
+  --color-white: #fbfbfb;
+  --color-black: #000;
+  --color-slider-track: #424a56;
+}
+
+html {
+  color: var(--color-white);
+  background: rgb(33, 37, 43);
+}
+
+a {
+  color: var(--color-typography);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Verdana, Tahoma, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+button {
+  color: inherit;
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: Verdana, Tahoma, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+select {
+  font-family: Verdana, Tahoma, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button:disabled {
+  opacity: 0.666;
+  cursor: default;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0 0 20px 0;
+}
+
+h5,
+h6 {
+  margin: 0 0 10px 0;
+}
+
+input {
+  padding: 10px 30px;
+  font-size: var(--font-size-md);
+}
+
+textarea {
+  padding: 10px 30px;
+  font-size: var(--font-size-md);
+  font-family: Arial, sans-serif;
+}
+
+button {
+  width: 100%;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 3px;
+  font-weight: normal;
+}
+
+.main-container {
+  width: 100%;
+  margin: auto;
+  padding: 40px 40px 40px 0;
+}
+
+.main-container > h1 {
+  text-align: center;
+}
+
+.side-nav {
+  position: fixed;
+  max-width: 20%;
+  padding: 0 20px 0 20px;
+}
+
+.directory button,
+.directory a {
+  display: block;
+  text-align: left;
+  padding: 8px;
+}
+
+button:hover,
+a:hover {
+  color: red;
+}
+
+.right-container {
+  padding-left: 20%;
+}

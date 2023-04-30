@@ -13,8 +13,7 @@
     "declaration": true,
     "declarationDir": "lib",
     "skipLibCheck": true,
-    "jsx": "react",
-    "jsxFactory": "Atom.createElement"
+    "jsx": "react"
   },
   "include": ["./src/**/*.ts"],
   "exclude": ["node_modules", "./src/jestSetup.ts"]

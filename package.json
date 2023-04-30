@@ -5,10 +5,10 @@
   "main": "lib/index.js",
   "module": "true",
   "scripts": {
-    "dev": "nodemon -w src --ext ts,tsx,html --exec npm run dev:build",
+    "dev": "nodemon -w src --ext ts,tsx,html,css --exec npm run dev:build",
     "dev:build": "npm run build && env-cmd -f .env node lib/index.js",
     "build": "shx rm -rf lib && esbuild src/index.ts --outdir=lib --bundle --platform=node --target=node20 && npm run build:front",
-    "build:front": "rm -rf lib/dist && esbuild ./src/front/root.tsx --outfile=lib/dist/root.mjs --bundle --loader:.js=jsx --external:react --format=esm && shx cp src/front/root.html lib/dist",
+    "build:front": "rm -rf lib/dist && esbuild ./src/front/root.tsx --outdir=lib/dist --bundle --loader:.js=jsx && shx cp -r src/front/public lib/dist",
     "tsc:w": "tsc --watch --noEmit"
   },
   "author": "Miika Henttonen",
@@ -17,7 +17,11 @@
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "env-cmd": "^10.1.0",
-    "express": "^5.0.0-beta.1"
+    "express": "^5.0.0-beta.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router": "^6.11.0",
+    "react-router-dom": "^6.11.0"
   },
   "devDependencies": {
     "@types/compression": "^1.7.2",

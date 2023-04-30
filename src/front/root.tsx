@@ -1,19 +1,20 @@
 import React from "react";
-import Atom, { useState } from "../atom";
+import { createRoot } from "react-dom/client";
+import { Directory } from "./Directory";
 
-// @ts-expect-error figure this out sometime
-React.createElement = Atom.createElement;
-
-const App = (props: { name: string }) => {
-  const [counter, setCount] = useState<number>(1);
+const App = () => {
   return (
-    <h1>
-      <span>
-        Hello from {props.name} times {counter}!
-      </span>
-      <button onClick={() => setCount((c) => c + 1)}>Increment</button>
-    </h1>
+    <div className="main-container">
+      <h1>Files</h1>
+
+      <div className="right-container">
+        <Directory />
+      </div>
+    </div>
   );
 };
 
-Atom.render(<App name="Atom" />, document.getElementById("root"));
+const container = document.getElementById("root");
+const root = createRoot(container);
+
+root.render(<App />);
