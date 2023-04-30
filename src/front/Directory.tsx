@@ -1,14 +1,23 @@
 import React, { useEffect, useState } from "react";
 
-type Dir = { path: string; name: string; children?: Dir[] };
+type Stats = { size: number };
+type Dir = { path: string; name: string; stat: Stats };
 
-export const Directory = () => {
-  const [name, setName] = useState("root");
-  const [prevName, setPrevName] = useState("root");
-  const [directory, setDirectory] = useState<Dir>();
+export const Directory = ({
+  currentDirectory,
+  setCurrentDirectory,
+}: {
+  currentDirectory?: Dir;
+  setCurrentDirectory: (dir: Dir) => void;
+}) => {
+  const [directory, setDirectory] = useState<Dir[]>();
 
   useEffect(() => {
-    fetch(`/directories/${name}`, {
+    if (!currentDirectory) {
+      return;
+    }
+
+    fetch(`/directories/${currentDirectory.path}`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -20,35 +29,31 @@ export const Directory = () => {
       })
       .then(setDirectory)
       .catch(console.error);
-  }, [name]);
+  }, [currentDirectory]);
 
   if (!directory) {
     return null;
   }
-  console.log("prevName", prevName);
 
   const changeDir = (dir) => {
-    if (Array.isArray(dir.children)) {
-      setPrevName(name);
-    }
+    setCurrentDirectory(dir);
+  };
 
-    setName(dir.name);
+  const isFile = (dir: Dir) => {
+    return dir.name.includes(".") && dir.stat.size;
   };
 
   return (
     <div className="directory">
-      <button onClick={() => setName(prevName)}>{prevName}</button>
-
-      {(directory.children || []).map((dir: Dir) =>
-        Array.isArray(directory.children) ? (
-          <button
-            key={`${dir.path}-${Date.now()}`}
-            onClick={() => changeDir(dir)}
-          >
+      {directory.map((dir: Dir) =>
+        isFile(dir) ? (
+          <a key={dir.path} href={`/${dir.name}?path=${dir.path}`}>
+            {dir.name}
+          </a>
+        ) : (
+          <button key={dir.path} onClick={() => changeDir(dir)}>
             {dir.name}
           </button>
-        ) : (
-          <a href={`/${dir.name}`}></a>
         )
       )}
     </div>

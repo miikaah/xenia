@@ -1,9 +1,11 @@
 import express from "express";
+import fs from "fs/promises";
 import path from "path";
 
+import { Dirent, Stats } from "fs";
 import { errorHandler } from "./errorHandler";
 import { app } from "./express";
-import { traverseFileSystem } from "./traverseFileSystem";
+import * as urlSafeBase64 from "./urlSafeBase64";
 
 export { app } from "./express";
 
@@ -17,51 +19,8 @@ const directories = DIRECTORIES.split(",");
 
 type Dir = {
   path: string;
-  name: string;
-  children?: Dir[];
-};
-
-const recurseChildren = (
-  parent: string,
-  children: string[],
-  isRoot = false
-): Dir[] | undefined => {
-  if (children.length === 1 || parent.endsWith(children[0])) {
-    return !isRoot
-      ? undefined
-      : [
-          {
-            path: parent,
-            name: children[0],
-          },
-        ];
-  }
-
-  const uniqChildren = Array.from(
-    new Set(children.map((child) => child.split(path.sep)[0]))
-  );
-
-  const qwe = uniqChildren.reduce((acc, child) => {
-    const path2 = `${parent}${path.sep}${child}`;
-
-    return {
-      ...acc,
-      [child]: {
-        path: path2,
-        name: child,
-        children: children
-          .filter((c) => c.startsWith(child))
-          .map((c) => c.replace(`${child}${path.sep}`, "")),
-      },
-    };
-  }, {});
-
-  return Object.values(qwe).map((q) => ({
-    // @ts-expect-error useless
-    ...q,
-    // @ts-expect-error useless
-    children: recurseChildren(q.path, q.children || []),
-  }));
+  name?: string;
+  stat?: Stats;
 };
 
 let dirs: Dir[] = [];
@@ -76,6 +35,18 @@ directories.map(async (directory) => {
   dirs.push({ path: directory, name });
 });
 
+const getStats = (dir: Dirent[], pathDecoded: string) => {
+  return dir.map(async ({ name }) => {
+    const fullPath = `${pathDecoded}${path.sep}${name}`;
+
+    return {
+      path: urlSafeBase64.encode(`${pathDecoded}${path.sep}${name}`),
+      name,
+      stat: await fs.stat(fullPath),
+    };
+  });
+};
+
 const start = async () => {
   let paths: Dir[] = [];
 
@@ -85,11 +56,10 @@ const start = async () => {
         return;
       }
 
-      const files = await traverseFileSystem(directory);
       paths.push({
-        path: directory,
-        name: directory.replace(/^.:\\/, ""),
-        children: recurseChildren(directory, files, true),
+        path: urlSafeBase64.encode(directory),
+        name: directory.replace(/^.:\\/, "").split(path.sep).pop(),
+        stat: await fs.stat(directory),
       });
 
       app.use(express.static(directory));
@@ -97,49 +67,50 @@ const start = async () => {
     })
   );
 
-  const rootPaths = paths.reduce((acc, dir) => {
-    // @ts-expect-error useless
-    if (!acc.children) {
-      return {
-        children: [],
-      };
-    }
-
-    const children = [
-      // @ts-expect-error useless
-      ...acc.children,
-      { path: dir.path, name: dir.name },
-    ];
-
-    return {
-      ...acc,
-      children,
-    };
-  }, {});
-
   app.get("/directories", async (req, res) => {
     res.json(paths);
   });
 
-  app.get("/directories/:name", async (req, res) => {
-    const { name } = req.params;
+  app.get("/directories/:pathname", async (req, res) => {
+    const { pathname } = req.params;
+    const pathEntry = paths.find((p) => p.path === pathname);
 
-    if (name === "root") {
-      res.json(rootPaths);
+    if (!pathEntry) {
+      const pathDecoded = urlSafeBase64.decode(pathname);
+      const dir = await fs.readdir(pathDecoded, {
+        withFileTypes: true,
+      });
+
+      if (!dir) {
+        res.status(404).send();
+        return;
+      }
+
+      const dirs = await Promise.all(getStats(dir, pathDecoded));
+
+      res.json(dirs.sort((a, b) => a.stat.size - b.stat.size));
       return;
     }
 
-    const dir = paths.find((p) => p.name === name);
+    const pathDecoded = urlSafeBase64.decode(pathEntry.path);
+    const dir = await fs.readdir(pathDecoded, {
+      withFileTypes: true,
+    });
+    const dirs = await Promise.all(getStats(dir, pathDecoded));
 
-    res.json(dir);
+    res.json(dirs.sort((a, b) => a.stat.size - b.stat.size));
   });
 
   app.get("/", (req, res) => {
     res.sendFile("dist/public/index.html", options);
   });
 
-  app.get("/:filepath", (req, res) => {
-    res.sendFile("dist/public/index.html", options);
+  app.get("/:filename", (req, res) => {
+    const { path } = req.query;
+    // @ts-expect-error stfu
+    const pathDecoded = urlSafeBase64.decode(path ?? "");
+
+    res.sendFile(pathDecoded);
   });
 
   app.get("/public/:filename", (req, res) => {
@@ -157,7 +128,7 @@ const start = async () => {
 
   app.listen(PORT, async () => {
     if (NODE_ENV !== "test") {
-      console.log(`Serving ${baseUrl}\n`);
+      console.log(`\nServing ${baseUrl}\n`);
     }
   });
 };
