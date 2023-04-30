@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "lib": ["dom", "dom.iterable", "esNext"],
+    "target": "es2020",
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "moduleResolution": "node",
+    "strict": true,
+    "sourceMap": true,
+    "outDir": "lib",
+    "baseUrl": ".",
+    "declaration": true,
+    "declarationDir": "lib",
+    "skipLibCheck": true,
+    "jsx": "react",
+    "jsxFactory": "Atom.createElement"
+  },
+  "include": ["./src/**/*.ts"],
+  "exclude": ["node_modules", "./src/jestSetup.ts"]
+}
