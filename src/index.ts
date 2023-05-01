@@ -1,3 +1,4 @@
+import dotenv from "dotenv";
 import express from "express";
 import fs from "fs/promises";
 import path from "path";
@@ -9,12 +10,18 @@ import * as urlSafeBase64 from "./urlSafeBase64";
 
 export { app } from "./express";
 
-const { PORT = 5150, NODE_ENV, XENIA_PATH } = process.env;
+dotenv.config();
+
+const {
+  PORT = 5150,
+  NODE_ENV,
+  XENIA_PATH = "",
+  DIRECTORIES = "",
+} = process.env;
 const baseUrl = `http://localhost:${PORT}`;
 const options = {
   root: XENIA_PATH,
 };
-const { DIRECTORIES = "" } = process.env;
 const directories = DIRECTORIES.split(",");
 
 type Dir = {
@@ -58,7 +65,7 @@ const start = async () => {
 
       paths.push({
         path: urlSafeBase64.encode(directory),
-        name: directory.replace(/^.:\\/, "").split(path.sep).pop(),
+        name: directory.replace(/^.:\//, "").split("/").pop(),
         stat: await fs.stat(directory),
       });
 
@@ -102,13 +109,21 @@ const start = async () => {
   });
 
   app.get("/", (req, res) => {
-    res.sendFile("dist/public/index.html", options);
+    res.sendFile(path.join(XENIA_PATH, "dist/public/index.html"));
   });
 
   app.get("/:filename", (req, res) => {
+    const { filename } = req.params;
+
+    if (!filename || filename === "favicon.ico") {
+      res.end();
+      return;
+    }
+
     const { path } = req.query;
     // @ts-expect-error stfu
     const pathDecoded = urlSafeBase64.decode(path ?? "");
+    console.log("GET", req.ip, pathDecoded);
 
     res.sendFile(pathDecoded);
   });

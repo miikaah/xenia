@@ -6,16 +6,22 @@
   "module": "true",
   "scripts": {
     "dev": "nodemon -w src --ext ts,tsx,html,css --exec npm run dev:build",
-    "dev:build": "npm run build && env-cmd -f .env node lib/index.js",
-    "build": "shx rm -rf lib && esbuild src/index.ts --outdir=lib --bundle --platform=node --target=node20 && npm run build:front",
-    "build:front": "rm -rf lib/dist && esbuild ./src/front/root.tsx --outdir=lib/dist --bundle --loader:.js=jsx && shx cp -r src/front/public lib/dist",
-    "tsc:w": "tsc --watch --noEmit"
+    "dev:build": "npm run build && env-cmd -f .env.dev node libdev/index.js",
+    "build": "shx rm -rf libdev && esbuild src/index.ts --outdir=libdev --bundle --platform=node --target=node20 && npm run build:front",
+    "build:front": "rm -rf libdev/dist && esbuild ./src/front/root.tsx --outdir=libdev/dist --bundle --loader:.js=jsx && shx cp -r src/front/public libdev/dist",
+    "prod": "npm run uisvc && npm run build:prod && npm run isvc",
+    "build:prod": "shx rm -rf lib && esbuild src/index.ts --outdir=lib --bundle --platform=node --target=node20 && npm run build:front:prod",
+    "build:front:prod": "rm -rf lib/dist && esbuild ./src/front/root.tsx --outdir=lib/dist --bundle --loader:.js=jsx && shx cp -r src/front/public lib/dist",
+    "tsc:w": "tsc --watch --noEmit",
+    "isvc": "qckwinsvc --name xenia --script lib\\index.js --description Xenia --startImmediately",
+    "uisvc": "qckwinsvc --uninstall --name xenia --script lib\\index.js"
   },
   "author": "Miika Henttonen",
   "license": "MIT",
   "dependencies": {
     "compression": "^1.7.4",
     "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
     "env-cmd": "^10.1.0",
     "express": "^5.0.0-beta.1",
     "react": "^18.2.0",
