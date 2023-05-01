@@ -123,7 +123,7 @@ const start = async () => {
     const { path } = req.query;
     // @ts-expect-error stfu
     const pathDecoded = urlSafeBase64.decode(path ?? "");
-    console.log("GET", req.ip, pathDecoded);
+    console.log(new Date().toISOString(), req.method, req.ip, pathDecoded);
 
     res.sendFile(pathDecoded);
   });
