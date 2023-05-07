@@ -142,7 +142,7 @@ const start = async () => {
 
   app.listen(PORT, async () => {
     if (NODE_ENV !== "test") {
-      console.log(`\nServing ${baseUrl}\n`);
+      console.log(`\n${new Date().toISOString()} Serving ${baseUrl}\n`);
     }
   });
 };
