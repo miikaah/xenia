@@ -44,14 +44,24 @@ export const Directory = ({
           return `${size} B`;
         }
 
-        return `${(size / 1000).toFixed(0)} kB`;
+        return `${(size / 1000).toFixed(2)} kB`;
       }
 
-      return `${(size / 1_000_000).toFixed(0)} MB`;
+      return `${(size / 1_000_000).toFixed(2)} MB`;
     }
 
-    return `${(size / 1_000_000_000).toFixed(0)} GB`;
+    return `${(size / 1_000_000_000).toFixed(2)} GB`;
   };
+
+  const formatDate = (mtimeMs: number) => {
+    const [y0, y1, y2, y3, m0, m1, d0, d1, mi0, mi1, h0, h1] = new Date(mtimeMs)
+      .toISOString()
+      .substring(0, 16)
+      .replace(/[-:T]/g, "")
+      .split("");
+    
+    return `${mi0}${mi1}:${h0}${h1} ${d0}${d1}.${m0}${m1}.${y0}${y1}${y2}${y3}`;
+  }
 
   const handleDownloadClick = (dir: Dir) => {
     window.location.href = `/download?path=${dir.path}`;
@@ -76,7 +86,7 @@ export const Directory = ({
           ) : (
             <button onClick={() => changeDir(dir)}>{dir.name}</button>
           )}
-          <span>{new Date(dir.stat.mtimeMs).toLocaleDateString()}</span>
+          <span>{formatDate(dir.stat.mtimeMs)}</span>
           <span className="size">{humanizeSize(dir.stat.size)}</span>
           {dir.isDirectory && (
             <button
