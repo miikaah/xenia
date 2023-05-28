@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Directory } from "./Directory";
-
-type Stats = { size: number };
-type Dir = { path: string; name: string; stat: Stats };
+import { Dir } from "./types"
 
 const App = () => {
   const [directories, setDirectories] = useState<Dir[]>();
   const [currentDirectory, setCurrentDirectory] = useState<Dir>();
+  const [previousDirectories, setPreviousDirectories] = useState<Dir[]>([]);
 
   useEffect(() => {
     fetch(`/directories`, {
@@ -15,17 +14,33 @@ const App = () => {
         "Content-Type": "application/json",
       },
     })
-      .then(async (response) => {
-        const data = await response.json();
-        console.log("root", data);
-        return data;
-      })
+      .then(async (response) => response.json())
       .then(setDirectories)
       .catch(console.error);
   }, []);
 
   if (!directories) {
     return null;
+  }
+
+  const changeDirectory = (dir: Dir, resetDirectories?: boolean) => {
+    setCurrentDirectory(dir);
+
+    if (resetDirectories) {
+      setPreviousDirectories([]);
+      return
+    }
+    
+    if (currentDirectory) {
+      setPreviousDirectories([...previousDirectories, currentDirectory]);
+    }
+  }
+
+  const goToPreviousDirectory = () => {
+    const previousDirectory = previousDirectories[previousDirectories.length - 1];
+
+    setCurrentDirectory(previousDirectory);
+    setPreviousDirectories(previousDirectories.slice(0, -1));
   }
 
   return (
@@ -37,7 +52,7 @@ const App = () => {
           return (
             <button
               key={directory.path}
-              onClick={() => setCurrentDirectory(directory)}
+              onClick={() => changeDirectory(directory, true)}
             >
               {directory.name}
             </button>
@@ -48,7 +63,8 @@ const App = () => {
       <div className="right-container">
         <Directory
           currentDirectory={currentDirectory}
-          setCurrentDirectory={setCurrentDirectory}
+          setCurrentDirectory={changeDirectory}
+          goToPreviousDirectory={goToPreviousDirectory}
         />
       </div>
     </div>

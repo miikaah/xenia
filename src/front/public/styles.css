@@ -109,18 +109,32 @@ button {
 .directory {
   display: flex;
   flex-direction: column;
-  max-width: 50%;
+  max-width: 1000px;
   padding-top: 20px;
 }
 
-.directory > button {
+.directory-wrapper > button,
+.directory-wrapper > a {
   text-align: left;
+}
+
+.directory-wrapper {
+  display: grid;
+  grid-template-columns: 60fr 20fr 15fr 5fr;
+  grid-template-rows: auto;
+  grid-gap: 10px;
+}
+
+.directory-wrapper > * {
   padding: 4px 4px 4px 0;
 }
 
-.directory > a {
-  text-align: left;
-  padding: 4px 4px 4px 0;
+.size {
+  text-align: right;
+}
+
+.button-download > svg {
+  vertical-align: 1px;
 }
 
 button:hover,
