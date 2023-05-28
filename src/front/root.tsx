@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Directory } from "./Directory";
-import { Dir } from "./types"
+import { Dir } from "./types";
 
 const App = () => {
   const [directories, setDirectories] = useState<Dir[]>();
@@ -28,20 +28,21 @@ const App = () => {
 
     if (resetDirectories) {
       setPreviousDirectories([]);
-      return
+      return;
     }
-    
+
     if (currentDirectory) {
       setPreviousDirectories([...previousDirectories, currentDirectory]);
     }
-  }
+  };
 
   const goToPreviousDirectory = () => {
-    const previousDirectory = previousDirectories[previousDirectories.length - 1];
+    const previousDirectory =
+      previousDirectories[previousDirectories.length - 1];
 
     setCurrentDirectory(previousDirectory);
     setPreviousDirectories(previousDirectories.slice(0, -1));
-  }
+  };
 
   return (
     <div className="main-container">
