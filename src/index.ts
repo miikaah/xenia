@@ -202,7 +202,7 @@ const compressDirectory = async (
   });
 
   archive.pipe(output);
-  archive.directory(directoryPath, files.length > 1 ? false : outputFilePath);
+  archive.directory(directoryPath, files.length > 1 ? false : outputFilename);
   archive.finalize();
   console.log("Archiving", outputFilename);
 };
