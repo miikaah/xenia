@@ -178,7 +178,7 @@ const compressDirectory = async (
   await fs.writeFile(outputFilename, "");
 
   const archive = archiver("zip", {
-    zlib: { level: 9 },
+    zlib: { level: 1 },
   });
 
   archive.on("warning", (err) => {
