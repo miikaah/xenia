@@ -131,6 +131,13 @@ const compressDirectory = async (
   outputFilePath: string,
   res: Response
 ) => {
+  if (!(await directoryExists(tempDirPath))) {
+    console.log(
+      `\nTemporary directory ${tempDirPath} does not exists. Creating...\n`
+    );
+    await fs.mkdir(tempDirPath);
+  }
+
   console.log("Requested", directoryPath, "for archival");
   const files = await fs.readdir(directoryPath);
 
@@ -142,11 +149,9 @@ const compressDirectory = async (
   );
 
   if (totalFilesize > 3_000_000_000) {
-    res
-      .status(401)
-      .json({
-        error: `File size of ${humanizeSize(totalFilesize)} is too large`,
-      });
+    res.status(401).json({
+      error: `File size of ${humanizeSize(totalFilesize)} is too large`,
+    });
     return;
   }
 
