@@ -5,11 +5,15 @@ import fsOrig from "fs";
 import fs from "fs/promises";
 import os from "os";
 import path from "path";
+import crypto from "crypto";
 
-import { Dirent, Stats } from "fs";
+import { Dirent } from "fs";
 import { errorHandler } from "./errorHandler";
 import { app } from "./express";
 import * as urlSafeBase64 from "./urlSafeBase64";
+import { getAppHtml } from "./front/Main";
+import { Dir } from "./types";
+import { humanizeSize } from "./util";
 
 export { app } from "./express";
 
@@ -27,14 +31,6 @@ const options = {
 };
 const directories = DIRECTORIES.split(",");
 const tempDirPath = `${path.join(os.tmpdir(), "xenia")}`;
-
-type Dir = {
-  path: string;
-  name: string;
-  stat: Stats;
-  isDirectory: boolean;
-  isLeafNode: boolean;
-};
 
 const getIsLeafNode = async (directory: string) => {
   const files = await fs.readdir(directory);
@@ -59,6 +55,7 @@ const getStats = (dir: Dirent[], directory: string): Promise<Dir>[] => {
 
     return {
       path: urlSafeBase64.encode(fullPath),
+      hash: crypto.createHash("md5").update(directory).digest("hex"),
       pathAsArray: fullPath.split(path.sep),
       name,
       stat: await fs.stat(fullPath),
@@ -108,22 +105,6 @@ const getFileSize = async (
   }
 
   return totalFilesize;
-};
-
-const humanizeSize = (size: number) => {
-  if (size < 1_000_000_000) {
-    if (size < 1_000_000) {
-      if (size < 1000) {
-        return `${size} B`;
-      }
-
-      return `${(size / 1000).toFixed(2)} kB`;
-    }
-
-    return `${(size / 1_000_000).toFixed(2)} MB`;
-  }
-
-  return `${(size / 1_000_000_000).toFixed(2)} GB`;
 };
 
 const compressDirectory = async (
@@ -249,6 +230,7 @@ const start = async () => {
 
       dirs.push({
         path: directory,
+        hash: crypto.createHash("md5").update(directory).digest("hex"),
         name,
         stat,
         isDirectory,
@@ -267,7 +249,8 @@ const start = async () => {
       const isDirectory = stat.isDirectory();
 
       paths.push({
-        path: urlSafeBase64.encode(directory),
+        path: directory,
+        hash: crypto.createHash("md5").update(directory).digest("hex"),
         name: directory.replace(/^.:\//, "").split("/").pop() ?? "",
         stat,
         isDirectory,
@@ -281,75 +264,16 @@ const start = async () => {
 
   paths.sort((a, b) => a.name.localeCompare(b.name));
 
-  app.get("/directories", async (req, res) => {
-    res.json(paths);
-  });
-
-  const byDirFirst = (a: Dir, b: Dir) => {
-    if (a.isDirectory !== b.isDirectory) {
-      return a.isDirectory ? -1 : 1;
-    } else {
-      return a.name.localeCompare(b.name);
-    }
-  };
-
-  app.get("/directories/:pathname", async (req, res) => {
-    const { pathname } = req.params;
-    const pathEntry = paths.find((p) => p.path === pathname);
-
-    if (!pathEntry) {
-      const pathDecoded = urlSafeBase64.decode(pathname);
-      const dir = await fs.readdir(pathDecoded, {
-        withFileTypes: true,
-      });
-
-      if (!dir) {
-        res.status(404).send();
-        return;
-      }
-
-      const dirs = await Promise.all(getStats(dir, pathDecoded));
-
-      res.json(dirs.sort(byDirFirst));
-      return;
-    }
-
-    const pathDecoded = urlSafeBase64.decode(pathEntry.path);
-    const dir = await fs.readdir(pathDecoded, {
-      withFileTypes: true,
-    });
-    const dirs = await Promise.all(getStats(dir, pathDecoded));
-
-    res.json(dirs.sort(byDirFirst));
-  });
+  // ROUTES
 
   app.get("/", (req, res) => {
-    res.sendFile(path.join(XENIA_PATH, "dist/public/index.html"));
-  });
-
-  app.get("/:filename", (req, res) => {
-    const { filename } = req.params;
-
-    if (!filename || filename === "favicon.ico") {
-      res.end();
-      return;
-    }
-
-    const { path } = req.query;
-    const pathDecoded = urlSafeBase64.decode(path as string);
-
-    res.sendFile(pathDecoded);
+    res.send(getAppHtml(paths));
   });
 
   app.get("/public/:filename", (req, res) => {
     const { filename } = req.params;
 
-    if (filename === "app.js") {
-      res.sendFile(`dist/app.js`, options);
-      return;
-    }
-
-    res.sendFile(`dist/public/${filename}`, options);
+    res.sendFile(`public/${filename}`, options);
   });
 
   app.get("/download", async (req, res) => {
@@ -358,6 +282,62 @@ const start = async () => {
     const dirname = pathDecoded.split(path.sep).pop();
 
     await compressDirectory(pathDecoded, dirname ?? "unknown", res);
+  });
+
+  app.get("/:hash", async (req, res) => {
+    const { hash } = req.params;
+    const dir = dirs.find((dir) => dir.hash === hash);
+
+    if (!dir) {
+      res.status(404).send("Not found");
+      return;
+    }
+
+    const dirdir = await fs.readdir(dir.path, {
+      withFileTypes: true,
+    });
+    const contents = await Promise.all(getStats(dirdir, dir.path));
+
+    res.send(getAppHtml(paths, contents, "/"));
+  });
+
+  app.get("/:hash/(.*)", async (req, res) => {
+    const { hash } = req.params;
+    const dir = dirs.find((dir) => dir.hash === hash);
+
+    if (!dir) {
+      res.status(404).send("Not found");
+      return;
+    }
+
+    const urlpath = req.url.split(hash).pop();
+
+    if (!urlpath) {
+      res.status(400).send("Malformed path");
+      return;
+    }
+
+    const pathname = decodeURI(urlpath);
+    const basepath = path.join(dir.path, pathname);
+
+    try {
+      const dirdir = await fs.readdir(basepath, {
+        withFileTypes: true,
+      });
+      const contents = await Promise.all(getStats(dirdir, basepath));
+      const currentDirArray = pathname.split("/");
+      const currentDir = currentDirArray[currentDirArray.length - 2];
+      const previousUrl = req.url.replace(encodeURI(`${currentDir}/`), "");
+
+      res.send(getAppHtml(paths, contents, previousUrl));
+    } catch (error: any) {
+      if (error.code === "ENOTDIR") {
+        res.sendFile(basepath);
+      } else {
+        console.error("Failed during render", error);
+        res.status(500).send("Internal Server Error");
+      }
+    }
   });
 
   app.use(errorHandler);

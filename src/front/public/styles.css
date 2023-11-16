@@ -3,9 +3,6 @@
   --font-size-sm: 16px;
   --font-size-xs: 14px;
   --font-size-xxs: 12px;
-  --toolbar-height: 80px;
-  --titlebar-height: 36px;
-  --library-width: 505px; /* 5px extra for borders */
   --color-white: #fbfbfb;
   --color-black: #000;
   --color-slider-track: #424a56;
@@ -18,6 +15,7 @@ html {
 
 a {
   color: var(--color-white);
+  text-decoration: none;
 }
 
 * {
@@ -131,6 +129,11 @@ button {
 
 .size {
   text-align: right;
+}
+
+.button-download {
+  width: 20px;
+  height: 20px;
 }
 
 .button-download > svg {
