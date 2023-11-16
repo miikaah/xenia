@@ -344,8 +344,8 @@ const start = async () => {
   app.get("/public/:filename", (req, res) => {
     const { filename } = req.params;
 
-    if (filename === "root.js") {
-      res.sendFile(`dist/root.js`, options);
+    if (filename === "app.js") {
+      res.sendFile(`dist/app.js`, options);
       return;
     }
 

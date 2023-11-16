@@ -9,11 +9,11 @@
     "dev": "nodemon -w src --ext ts,tsx,html,css --exec npm run dev:build",
     "dev:build": "npm run build && env-cmd -f .env.dev node libdev/index.js",
     "build": "shx rm -rf libdev && esbuild src/index.ts --outdir=libdev --bundle --platform=node --target=node20 && npm run build:front",
-    "build:front": "rm -rf libdev/dist && esbuild ./src/front/root.tsx --outdir=libdev/dist --bundle --loader:.js=jsx && shx cp -r src/front/public libdev/dist",
+    "build:front": "rm -rf libdev/dist && esbuild ./src/front/app.tsx --outdir=libdev/dist --bundle --loader:.js=jsx && shx cp -r src/front/public libdev/dist",
     "prod": "esbuild src/index.ts --outdir=lib --bundle --platform=node --target=node20",
     "restart:prod": "npm run uisvc && npm run build:prod && npm run isvc",
     "build:prod": "shx rm -rf lib && npm run prod && npm run build:prod:front",
-    "build:prod:front": "rm -rf lib/dist && esbuild ./src/front/root.tsx --outdir=lib/dist --bundle --loader:.js=jsx && shx cp -r src/front/public lib/dist",
+    "build:prod:front": "rm -rf lib/dist && esbuild ./src/front/app.tsx --outdir=lib/dist --bundle --loader:.js=jsx && shx cp -r src/front/public lib/dist",
     "tsc:w": "tsc --watch --noEmit",
     "isvc": "qckwinsvc --name xenia --script lib\\index.js --description Xenia --startImmediately",
     "uisvc": "qckwinsvc --uninstall --name xenia --script lib\\index.js"

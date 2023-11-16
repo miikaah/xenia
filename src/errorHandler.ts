@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 
 export const errorHandler = (
-  err: Error,
+  err: any,
   _req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   if (process.env.NODE_ENV !== "test") {
     console.error(err);
@@ -21,5 +21,5 @@ export const errorHandler = (
     return res.status(500).json({ message: "Internal Server Error" });
   }
 
-  res.status(500).json(err);
+  res.status(err.statusCode || 500).json(err);
 };
