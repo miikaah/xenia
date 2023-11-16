@@ -96,11 +96,11 @@ button {
   display: flex;
 }
 
-.directories > button:first-of-type {
+.directories > a:first-of-type {
   padding-left: 0;
 }
 
-.directories > button {
+.directories > a {
   margin-right: 20px;
 }
 
