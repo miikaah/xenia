@@ -26,7 +26,7 @@ const options = {
   root: XENIA_PATH,
 };
 const directories = DIRECTORIES.split(",");
-const tempDirPath = `${path.join(os.tmpdir(), "musa")}`;
+const tempDirPath = `${path.join(os.tmpdir(), "xenia")}`;
 
 type Dir = {
   path: string;
@@ -74,7 +74,7 @@ const padLeft = (numberToPad: number) => {
 
 const getFormattedDate = (date: Date) => {
   return `${date.getFullYear()}${padLeft(date.getMonth() + 1)}${padLeft(
-    date.getDate()
+    date.getDate(),
   )}${padLeft(date.getHours())}${padLeft(date.getSeconds())}`;
 };
 
@@ -93,7 +93,7 @@ const fileExists = async (filepath: string) => {
 
 const getFileSize = async (
   directoryPath: string,
-  totalFilesize: number
+  totalFilesize: number,
 ): Promise<number> => {
   const files = await fs.readdir(directoryPath);
 
@@ -129,11 +129,11 @@ const humanizeSize = (size: number) => {
 const compressDirectory = async (
   directoryPath: string,
   outputFilePath: string,
-  res: Response
+  res: Response,
 ) => {
   if (!(await directoryExists(tempDirPath))) {
     console.log(
-      `\nTemporary directory ${tempDirPath} does not exists. Creating...\n`
+      `\nTemporary directory ${tempDirPath} does not exists. Creating...\n`,
     );
     await fs.mkdir(tempDirPath);
   }
@@ -145,7 +145,7 @@ const compressDirectory = async (
   console.log(
     "Total size of the directory",
     humanizeSize(totalFilesize),
-    "bytes"
+    "bytes",
   );
 
   if (totalFilesize > 3_000_000_000) {
@@ -160,11 +160,11 @@ const compressDirectory = async (
   const timestamp = getFormattedDate(dirModifiedAt);
   const outputFilename = `${path.join(
     tempDirPath,
-    `${outputFilePath}.${timestamp}.${totalFilesize}`
+    `${outputFilePath}.${timestamp}.${totalFilesize}`,
   )}.zip`;
   const outputFilenameForClient = `${path.join(
     tempDirPath,
-    outputFilePath
+    outputFilePath,
   )}.zip`;
 
   if (await fileExists(outputFilename)) {
@@ -231,7 +231,7 @@ const start = async () => {
 
   if (!(await directoryExists(tempDirPath))) {
     console.log(
-      `\nTemporary directory ${tempDirPath} does not exists. Creating...\n`
+      `\nTemporary directory ${tempDirPath} does not exists. Creating...\n`,
     );
     await fs.mkdir(tempDirPath);
   }
@@ -254,7 +254,7 @@ const start = async () => {
         isDirectory,
         isLeafNode: false,
       });
-    })
+    }),
   );
 
   await Promise.all(
@@ -276,7 +276,7 @@ const start = async () => {
 
       app.use(express.static(directory));
       console.log("Serving static files from", directory);
-    })
+    }),
   );
 
   paths.sort((a, b) => a.name.localeCompare(b.name));
