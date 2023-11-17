@@ -158,10 +158,6 @@ button {
   margin-bottom: 8px;
 }
 
-.directory-enclosing-folder > a:hover {
-  color: red;
-}
-
 .directory-dir-link {
   display: flex;
 }
