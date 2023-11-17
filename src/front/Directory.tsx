@@ -1,5 +1,5 @@
 import React from "react";
-import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faFolder } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dir } from "../types";
 import { formatDate, humanizeSize } from "../util";
@@ -13,17 +13,22 @@ const Directory = ({
 }) => {
   return (
     <div className="directory">
-      <div>
+      <div className="directory-enclosing-folder">
         <a href={baseUrl}>..</a>
       </div>
       {directory.map((dir: Dir) => {
         return (
           <div className="directory-wrapper" key={dir.path}>
             <a
-              className={`${dir.isDirectory ? "" : "directory-file-link"}`}
+              className={`${
+                dir.isDirectory ? "directory-dir-link" : "directory-file-link"
+              }`}
               href={`${dir.name}${dir.isDirectory ? "/" : ""}`}
             >
-              {dir.name}
+              <span>
+                {dir.isDirectory && <FontAwesomeIcon icon={faFolder} />}
+              </span>
+              <span>{dir.name}</span>
             </a>
             <span>{formatDate(dir.stat.mtimeMs)}</span>
             <span className="size">{humanizeSize(dir.stat.size)}</span>

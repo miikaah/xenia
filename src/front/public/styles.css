@@ -135,7 +135,22 @@ button {
   text-align: right;
 }
 
-.button-download {
+.directory-enclosing-folder > a {
+  display: block;
+  width: 50%;
+  margin-bottom: 8px;
+}
+
+.directory-dir-link {
+  display: flex;
+}
+
+.directory-dir-link > span:first-of-type {
+  margin-right: 10px;
+}
+
+.button-download,
+.directory-dir-link > span:first-of-type {
   width: 20px;
   height: 20px;
 }
