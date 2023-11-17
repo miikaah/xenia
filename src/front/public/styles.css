@@ -161,6 +161,7 @@ button {
 .button-download,
 .directory-dir-link > span:first-of-type {
   width: 20px;
+  min-width: 20px;
   height: 20px;
 }
 
