@@ -258,11 +258,39 @@ const start = async () => {
 
   paths.sort((a, b) => a.name.localeCompare(b.name));
 
+  /**
+   * The naturalSort function splits the input strings into an array of alternating text and numeric parts
+   * using a regular expression. It then compares these parts one by one, considering both text and numeric parts
+   * during the comparison.
+   */
+  const naturalSort = (a: Dir, b: Dir): number => {
+    const aParts = a.name
+      .split(/(\d+)/)
+      .map((part) =>
+        isNaN(parseInt(part)) ? part.toLowerCase() : parseInt(part),
+      );
+    const bParts = b.name
+      .split(/(\d+)/)
+      .map((part) =>
+        isNaN(parseInt(part)) ? part.toLowerCase() : parseInt(part),
+      );
+
+    for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
+      if (aParts[i] < bParts[i]) {
+        return -1;
+      } else if (aParts[i] > bParts[i]) {
+        return 1;
+      }
+    }
+
+    return aParts.length - bParts.length;
+  };
+
   const byDirFirst = (a: Dir, b: Dir) => {
     if (a.isDirectory !== b.isDirectory) {
       return a.isDirectory ? -1 : 1;
     } else {
-      return a.name.localeCompare(b.name);
+      return naturalSort(a, b);
     }
   };
 
