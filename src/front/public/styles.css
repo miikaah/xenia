@@ -114,6 +114,15 @@ button {
 .directory-wrapper > button,
 .directory-wrapper > a {
   text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.directory-dir-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .directory-wrapper {
