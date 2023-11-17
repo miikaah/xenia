@@ -316,7 +316,7 @@ const start = async () => {
 
   app.get("/:name", async (req, res) => {
     const { name } = req.params;
-    const dir = dirs.find((dir) => dir.name === name);
+    const dir = dirs.find((dir) => dir.name === decodeURI(name));
 
     if (!dir) {
       res.status(404).send("Not found");
@@ -333,31 +333,32 @@ const start = async () => {
 
   app.get("/:name/(.*)", async (req, res) => {
     const { name } = req.params;
-    const dir = dirs.find((dir) => dir.name === name);
+    const dir = dirs.find((dir) => dir.name === decodeURI(name));
 
     if (!dir) {
       res.status(404).send("Not found");
       return;
     }
 
-    const urlpath = req.url.split(name).pop();
+    const urlparts = req.url.split("/").filter(Boolean).slice(1);
+    const urltail = urlparts.join("/");
 
-    if (!urlpath) {
+    if (!urltail) {
       res.status(400).send("Malformed path");
       return;
     }
 
-    const pathname = decodeURI(urlpath);
-    const basepath = path.join(dir.path, pathname);
+    const decodedUrlTail = decodeURI(urltail);
+    const basepath = path.join(dir.path, decodedUrlTail);
 
     try {
       const dirdir = await fs.readdir(basepath, {
         withFileTypes: true,
       });
       const contents = await Promise.all(getStats(dirdir, basepath));
-      const currentDirArray = pathname.split("/");
-      const currentDir = currentDirArray[currentDirArray.length - 2];
-      const previousUrl = req.url.replace(encodeURI(`${currentDir}/`), "");
+      const currentDirArray = req.url.split("/").filter(Boolean);
+      const currentDir = currentDirArray[currentDirArray.length - 1];
+      const previousUrl = req.url.replace(`${currentDir}/`, "");
 
       res.send(getAppHtml(paths, contents.sort(byDirFirst), previousUrl));
     } catch (error: any) {
