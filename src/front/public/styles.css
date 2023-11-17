@@ -6,6 +6,8 @@
   --color-white: #fbfbfb;
   --color-black: #000;
   --color-slider-track: #424a56;
+  --color-highlight: rgb(73, 255, 143);
+  --color-underline: rgb(73 255 143 / 37%);
 }
 
 html {
@@ -107,7 +109,7 @@ button {
 .directory {
   display: flex;
   flex-direction: column;
-  max-width: 1000px;
+  max-width: 1200px;
   padding-top: 20px;
 }
 
@@ -138,6 +140,12 @@ button {
 
 .directory-file-link {
   text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--color-underline);
+}
+
+.directory-file-link:hover {
+  text-decoration-color: var(--color-highlight);
 }
 
 .size {
@@ -148,6 +156,10 @@ button {
   display: block;
   width: 50%;
   margin-bottom: 8px;
+}
+
+.directory-enclosing-folder > a:hover {
+  color: red;
 }
 
 .directory-dir-link {
@@ -171,5 +183,5 @@ button {
 
 button:hover,
 a:hover {
-  color: red;
+  color: var(--color-highlight);
 }
