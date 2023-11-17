@@ -21,7 +21,7 @@ const App = ({
       <div className="directories">
         {directories.map((directory, i) => {
           return (
-            <a key={i} href={`/${directory.hash}/`}>
+            <a key={i} href={`/${directory.name}/`}>
               {directory.name}
             </a>
           );

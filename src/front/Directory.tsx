@@ -19,7 +19,12 @@ const Directory = ({
       {directory.map((dir: Dir) => {
         return (
           <div className="directory-wrapper" key={dir.path}>
-            <a href={`${dir.name}${dir.isDirectory ? "/" : ""}`}>{dir.name}</a>
+            <a
+              className={`${dir.isDirectory ? "" : "directory-file-link"}`}
+              href={`${dir.name}${dir.isDirectory ? "/" : ""}`}
+            >
+              {dir.name}
+            </a>
             <span>{formatDate(dir.stat.mtimeMs)}</span>
             <span className="size">{humanizeSize(dir.stat.size)}</span>
             {dir.isDirectory && (

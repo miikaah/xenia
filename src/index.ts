@@ -55,12 +55,10 @@ const getStats = (dir: Dirent[], directory: string): Promise<Dir>[] => {
 
     return {
       path: urlSafeBase64.encode(fullPath),
-      hash: crypto.createHash("md5").update(directory).digest("hex"),
       pathAsArray: fullPath.split(path.sep),
       name,
       stat: await fs.stat(fullPath),
       isDirectory,
-      isLeafNode: isDirectory ? await getIsLeafNode(fullPath) : true,
     };
   });
 };
@@ -230,11 +228,9 @@ const start = async () => {
 
       dirs.push({
         path: directory,
-        hash: crypto.createHash("md5").update(directory).digest("hex"),
         name,
         stat,
         isDirectory,
-        isLeafNode: false,
       });
     }),
   );
@@ -250,11 +246,9 @@ const start = async () => {
 
       paths.push({
         path: directory,
-        hash: crypto.createHash("md5").update(directory).digest("hex"),
-        name: directory.replace(/^.:\//, "").split("/").pop() ?? "",
+        name: directory.replace(/^.:\//, "").split(path.sep).pop() ?? "",
         stat,
         isDirectory,
-        isLeafNode: await getIsLeafNode(directory),
       });
 
       app.use(express.static(directory));
@@ -263,6 +257,14 @@ const start = async () => {
   );
 
   paths.sort((a, b) => a.name.localeCompare(b.name));
+
+  const byDirFirst = (a: Dir, b: Dir) => {
+    if (a.isDirectory !== b.isDirectory) {
+      return a.isDirectory ? -1 : 1;
+    } else {
+      return a.name.localeCompare(b.name);
+    }
+  };
 
   // ROUTES
 
@@ -284,9 +286,9 @@ const start = async () => {
     await compressDirectory(pathDecoded, dirname ?? "unknown", res);
   });
 
-  app.get("/:hash", async (req, res) => {
-    const { hash } = req.params;
-    const dir = dirs.find((dir) => dir.hash === hash);
+  app.get("/:name", async (req, res) => {
+    const { name } = req.params;
+    const dir = dirs.find((dir) => dir.name === name);
 
     if (!dir) {
       res.status(404).send("Not found");
@@ -298,19 +300,19 @@ const start = async () => {
     });
     const contents = await Promise.all(getStats(dirdir, dir.path));
 
-    res.send(getAppHtml(paths, contents, "/"));
+    res.send(getAppHtml(paths, contents.sort(byDirFirst), "/"));
   });
 
-  app.get("/:hash/(.*)", async (req, res) => {
-    const { hash } = req.params;
-    const dir = dirs.find((dir) => dir.hash === hash);
+  app.get("/:name/(.*)", async (req, res) => {
+    const { name } = req.params;
+    const dir = dirs.find((dir) => dir.name === name);
 
     if (!dir) {
       res.status(404).send("Not found");
       return;
     }
 
-    const urlpath = req.url.split(hash).pop();
+    const urlpath = req.url.split(name).pop();
 
     if (!urlpath) {
       res.status(400).send("Malformed path");
@@ -329,7 +331,7 @@ const start = async () => {
       const currentDir = currentDirArray[currentDirArray.length - 2];
       const previousUrl = req.url.replace(encodeURI(`${currentDir}/`), "");
 
-      res.send(getAppHtml(paths, contents, previousUrl));
+      res.send(getAppHtml(paths, contents.sort(byDirFirst), previousUrl));
     } catch (error: any) {
       if (error.code === "ENOTDIR") {
         res.sendFile(basepath);
