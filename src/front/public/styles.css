@@ -127,7 +127,7 @@ button {
 
 .directory-wrapper {
   display: grid;
-  grid-template-columns: 60fr 20fr 15fr 5fr;
+  grid-template-columns: 64fr 16fr 15fr 5fr;
   grid-template-rows: auto;
   grid-gap: 10px;
 }

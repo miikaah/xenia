@@ -28,7 +28,9 @@ const Directory = ({
               <span>
                 {dir.isDirectory && <FontAwesomeIcon icon={faFolder} />}
               </span>
-              <span className="directory-dir-name">{dir.name}</span>
+              <span title={dir.name} className="directory-dir-name">
+                {dir.name}
+              </span>
             </a>
             <span>{formatDate(dir.stat.mtimeMs)}</span>
             <span className="size">{humanizeSize(dir.stat.size)}</span>
