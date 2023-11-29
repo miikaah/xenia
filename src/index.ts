@@ -5,7 +5,6 @@ import fsOrig from "fs";
 import fs from "fs/promises";
 import os from "os";
 import path from "path";
-import crypto from "crypto";
 
 import { Dirent } from "fs";
 import { errorHandler } from "./errorHandler";
