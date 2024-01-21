@@ -7,7 +7,7 @@ const App = ({
   directories,
   contents,
   baseUrl,
-  isXenia
+  isXenia,
 }: {
   directories: Dir[];
   contents?: Dir[];
@@ -51,12 +51,19 @@ export const getAppHtml = (
   <html lang="en">
     <head>
       <title>Xenia</title>
-      <link rel="stylesheet" type="text/css" href="${isXenia ? "/xenia" : ""}/public/styles.css" />
+      <link rel="stylesheet" type="text/css" href="${
+        isXenia ? "/xenia" : ""
+      }/public/styles.css" />
     </head>
 
     <body>
       ${renderToStaticMarkup(
-        <App directories={directories} contents={contents} baseUrl={baseUrl} isXenia={isXenia} />,
+        <App
+          directories={directories}
+          contents={contents}
+          baseUrl={baseUrl}
+          isXenia={isXenia}
+        />,
       )}
     </body>
   </html>

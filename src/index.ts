@@ -301,7 +301,7 @@ const start = async () => {
 
   const toXeniaPaths = (p: Dir) => ({
     ...p,
-    name: `xenia/${p.name}`
+    name: `xenia/${p.name}`,
   });
 
   app.get("/xenia", (req, res) => {
@@ -314,7 +314,7 @@ const start = async () => {
     const { filename } = req.params;
 
     res.sendFile(`public/${filename}`, options);
-  }
+  };
   app.get("/public/:filename", publicHandler);
   app.get("/xenia/public/:filename", publicHandler);
 
@@ -324,7 +324,7 @@ const start = async () => {
     const dirname = pathDecoded.split(path.sep).pop();
 
     await compressDirectory(pathDecoded, dirname ?? "unknown", res);
-  }
+  };
   app.get("/download", downloadHandler);
   app.get("/xenia/download", downloadHandler);
 
@@ -343,12 +343,14 @@ const start = async () => {
     const contents = await Promise.all(getStats(dirdir, dir.path));
 
     if (req.originalUrl.startsWith("/xenia")) {
-      res.send(getAppHtml(paths.map(toXeniaPaths), contents.sort(byDirFirst), "/"));
+      res.send(
+        getAppHtml(paths.map(toXeniaPaths), contents.sort(byDirFirst), "/"),
+      );
       return;
     }
 
     res.send(getAppHtml(paths, contents.sort(byDirFirst), "/"));
-  }
+  };
   app.get("/:maybeName/:name", nameHandler);
 
   const nameAnythingHandler = async (req: Request, res: Response) => {
@@ -361,7 +363,10 @@ const start = async () => {
       return;
     }
 
-    const urlparts = req.url.split("/").filter(Boolean).slice(isXenia ? 2 : 1);
+    const urlparts = req.url
+      .split("/")
+      .filter(Boolean)
+      .slice(isXenia ? 2 : 1);
     const urltail = urlparts.join("/");
 
     if (!urltail) {
@@ -382,7 +387,13 @@ const start = async () => {
       const previousUrl = req.url.replace(`${currentDir}/`, "");
 
       if (req.originalUrl.startsWith("/xenia")) {
-        res.send(getAppHtml(paths.map(toXeniaPaths), contents.sort(byDirFirst), previousUrl));
+        res.send(
+          getAppHtml(
+            paths.map(toXeniaPaths),
+            contents.sort(byDirFirst),
+            previousUrl,
+          ),
+        );
         return;
       }
 
@@ -395,7 +406,7 @@ const start = async () => {
         res.status(500).send("Internal Server Error");
       }
     }
-  }
+  };
   app.get("/:maybeName/:name/(.*)", nameAnythingHandler);
 
   app.use(errorHandler);

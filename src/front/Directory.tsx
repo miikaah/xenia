@@ -7,7 +7,7 @@ import { formatDate, humanizeSize } from "../util";
 const Directory = ({
   directory,
   baseUrl,
-  isXenia
+  isXenia,
 }: {
   directory: Dir[];
   baseUrl: string;
