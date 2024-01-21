@@ -1,6 +1,6 @@
 import archiver from "archiver";
 import dotenv from "dotenv";
-import express, { Response } from "express";
+import express, { Request, Response } from "express";
 import fsOrig from "fs";
 import fs from "fs/promises";
 import os from "os";
@@ -299,21 +299,36 @@ const start = async () => {
     res.send(getAppHtml(paths));
   });
 
-  app.get("/public/:filename", (req, res) => {
+  const toXeniaPaths = (p: Dir) => ({
+    ...p,
+    name: `xenia/${p.name}`
+  });
+
+  app.get("/xenia", (req, res) => {
+    const xeniaPaths = paths.map(toXeniaPaths);
+
+    res.send(getAppHtml(xeniaPaths));
+  });
+
+  const publicHandler = (req: Request, res: Response) => {
     const { filename } = req.params;
 
     res.sendFile(`public/${filename}`, options);
-  });
+  }
+  app.get("/public/:filename", publicHandler);
+  app.get("/xenia/public/:filename", publicHandler);
 
-  app.get("/download", async (req, res) => {
+  const downloadHandler = async (req: Request, res: Response) => {
     const { path: pathname } = req.query;
     const pathDecoded = urlSafeBase64.decode(pathname as string);
     const dirname = pathDecoded.split(path.sep).pop();
 
     await compressDirectory(pathDecoded, dirname ?? "unknown", res);
-  });
+  }
+  app.get("/download", downloadHandler);
+  app.get("/xenia/download", downloadHandler);
 
-  app.get("/:name", async (req, res) => {
+  const nameHandler = async (req: Request, res: Response) => {
     const { name } = req.params;
     const dir = dirs.find((dir) => dir.name === decodeURI(name));
 
@@ -327,11 +342,18 @@ const start = async () => {
     });
     const contents = await Promise.all(getStats(dirdir, dir.path));
 
-    res.send(getAppHtml(paths, contents.sort(byDirFirst), "/"));
-  });
+    if (req.originalUrl.startsWith("/xenia")) {
+      res.send(getAppHtml(paths.map(toXeniaPaths), contents.sort(byDirFirst), "/"));
+      return;
+    }
 
-  app.get("/:name/(.*)", async (req, res) => {
-    const { name } = req.params;
+    res.send(getAppHtml(paths, contents.sort(byDirFirst), "/"));
+  }
+  app.get("/:maybeName/:name", nameHandler);
+
+  const nameAnythingHandler = async (req: Request, res: Response) => {
+    const { maybeName, name } = req.params;
+    const isXenia = maybeName === "xenia";
     const dir = dirs.find((dir) => dir.name === decodeURI(name));
 
     if (!dir) {
@@ -339,7 +361,7 @@ const start = async () => {
       return;
     }
 
-    const urlparts = req.url.split("/").filter(Boolean).slice(1);
+    const urlparts = req.url.split("/").filter(Boolean).slice(isXenia ? 2 : 1);
     const urltail = urlparts.join("/");
 
     if (!urltail) {
@@ -359,6 +381,11 @@ const start = async () => {
       const currentDir = currentDirArray[currentDirArray.length - 1];
       const previousUrl = req.url.replace(`${currentDir}/`, "");
 
+      if (req.originalUrl.startsWith("/xenia")) {
+        res.send(getAppHtml(paths.map(toXeniaPaths), contents.sort(byDirFirst), previousUrl));
+        return;
+      }
+
       res.send(getAppHtml(paths, contents.sort(byDirFirst), previousUrl));
     } catch (error: any) {
       if (error.code === "ENOTDIR") {
@@ -368,7 +395,8 @@ const start = async () => {
         res.status(500).send("Internal Server Error");
       }
     }
-  });
+  }
+  app.get("/:maybeName/:name/(.*)", nameAnythingHandler);
 
   app.use(errorHandler);
 

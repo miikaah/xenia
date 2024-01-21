@@ -7,14 +7,18 @@ import { formatDate, humanizeSize } from "../util";
 const Directory = ({
   directory,
   baseUrl,
+  isXenia
 }: {
   directory: Dir[];
   baseUrl: string;
+  isXenia?: boolean;
 }) => {
+  const upUrl = `${isXenia && baseUrl === "/" ? `/xenia${baseUrl}` : baseUrl}`;
+
   return (
     <div className="directory">
       <div className="directory-enclosing-folder">
-        <a href={baseUrl}>..</a>
+        <a href={upUrl}>..</a>
       </div>
       {directory.map((dir: Dir) => {
         return (
