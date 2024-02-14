@@ -14,6 +14,7 @@ const Directory = ({
   isXenia?: boolean;
 }) => {
   const upUrl = `${isXenia && baseUrl === "/" ? `/xenia${baseUrl}` : baseUrl}`;
+  const downUrl = (dir: Dir) => isXenia ? `/xenia/download?path=${dir.path}` : `/download?path=${dir.path}`;
 
   return (
     <div className="directory">
@@ -41,7 +42,7 @@ const Directory = ({
             {dir.isDirectory && (
               <a
                 className="button-download"
-                href={`/download?path=${dir.path}`}
+                href={downUrl(dir)}
               >
                 <FontAwesomeIcon icon={faDownload} />
               </a>
