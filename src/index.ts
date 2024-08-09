@@ -354,9 +354,11 @@ const start = async () => {
   app.get("/:name", nameHandler);
 
   const nameAnythingHandler = async (req: Request, res: Response) => {
-    const { maybeName } = req.params;
+    const { maybeName, name } = req.params;
     const isXenia = maybeName === "xenia";
-    const dir = dirs.find((dir) => dir.name === decodeURI(maybeName));
+    const dir =
+      dirs.find((dir) => dir.name === decodeURI(name)) ||
+      dirs.find((dir) => dir.name === decodeURI(maybeName));
 
     if (!dir) {
       res.status(404).send("Not found");
@@ -368,12 +370,6 @@ const start = async () => {
       .filter(Boolean)
       .slice(isXenia ? 2 : 1);
     const urltail = urlparts.join("/");
-
-    if (!urltail) {
-      res.status(400).send("Malformed path");
-      return;
-    }
-
     const decodedUrlTail = decodeURI(urltail);
     const basepath = path.join(dir.path, decodedUrlTail);
 
@@ -407,7 +403,7 @@ const start = async () => {
       }
     }
   };
-  app.get("/:maybeName/(.*)", nameAnythingHandler);
+  app.get("/:maybeName/:name/(.*)", nameAnythingHandler);
 
   app.use(errorHandler);
 
