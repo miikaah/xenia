@@ -69,7 +69,7 @@ export const getAppHtml = (
         ${`${
           isXenia
             ? `setInterval(async () => {
-                await fetch(/heartbeat, { method: "HEAD" });
+                await fetch("/heartbeat", { method: "HEAD" });
               }, 10_000);`
             : ""
         }`}
