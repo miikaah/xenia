@@ -65,6 +65,15 @@ export const getAppHtml = (
           isXenia={isXenia}
         />,
       )}
+      <script>
+        ${`${
+          isXenia
+            ? `setInterval(async () => {
+                await fetch(/heartbeat, { method: "HEAD" });
+              }, 10_000);`
+            : ""
+        }`}
+      </script>
     </body>
   </html>
  `;
