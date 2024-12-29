@@ -31,20 +31,6 @@ const options = {
 const directories = DIRECTORIES.split(",");
 const tempDirPath = `${path.join(os.tmpdir(), "xenia")}`;
 
-const getIsLeafNode = async (directory: string) => {
-  const files = await fs.readdir(directory);
-
-  for (const file of files) {
-    const stat = await fs.stat(path.join(directory, file));
-
-    if (stat.isDirectory()) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
 const getStats = (dir: Dirent[], directory: string): Promise<Dir>[] => {
   return dir.map(async ({ name }) => {
     const fullPath = path.join(directory, name);
@@ -403,7 +389,7 @@ const start = async () => {
       }
     }
   };
-  app.get("/:maybeName/:name/(.*)", nameAnythingHandler);
+  app.get(/\/:maybeName\/:name\/(.*)/, nameAnythingHandler);
 
   app.use(errorHandler);
 
