@@ -340,11 +340,13 @@ const start = async () => {
   app.get("/:name", nameHandler);
 
   const nameAnythingHandler = async (req: Request, res: Response) => {
-    const { maybeName, name } = req.params;
+    let [maybeName] = Object.values(req.params);
+    if (maybeName.includes("/")) {
+      maybeName = maybeName.split("/")[0];
+    }
+
     const isXenia = maybeName === "xenia";
-    const dir =
-      dirs.find((dir) => dir.name === decodeURI(name)) ||
-      dirs.find((dir) => dir.name === decodeURI(maybeName));
+    const dir = dirs.find((dir) => dir.name === decodeURI(maybeName));
 
     if (!dir) {
       res.status(404).send("Not found");
@@ -389,7 +391,7 @@ const start = async () => {
       }
     }
   };
-  app.get(/\/:maybeName\/:name\/(.*)/, nameAnythingHandler);
+  app.get(/\/(.*)\/(.*)/, nameAnythingHandler);
 
   app.use(errorHandler);
 
