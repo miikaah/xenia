@@ -341,11 +341,17 @@ const start = async () => {
 
   const nameAnythingHandler = async (req: Request, res: Response) => {
     let [maybeName] = Object.values(req.params);
+
+    let isXenia = false;
     if (maybeName.includes("/")) {
-      maybeName = maybeName.split("/")[0];
+      const maybeNameParts = maybeName.split("/");
+      maybeName = maybeNameParts[0];
+      isXenia = maybeName === "xenia";
+      if (isXenia) {
+        maybeName = maybeNameParts[1];
+      }
     }
 
-    const isXenia = maybeName === "xenia";
     const dir = dirs.find((dir) => dir.name === decodeURI(maybeName));
 
     if (!dir) {
